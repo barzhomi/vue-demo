@@ -1,22 +1,48 @@
 <template>
-  <div>
+  <div class="row p-3">
     <input
+        class="form-control form-control-lg"
         v-model="newTodoText"
         placeholder="New todo"
         v-on:keydown.enter="addTodo"
     />
+  </div>
+  <div class="row p-3">
     <ul v-if="todos.length">
       <TodoListItem
-          v-for="todo in todos"
+          v-for="todo in visibleToDos"
           v-bind:key="todo.id"
           v-bind:todo="todo"
           v-on:remove="removeTodo"
-          v-on:update_status="updateTodo"
+          v-on:update="updateTodo"
       />
     </ul>
     <p v-else>
       Nothing left in the list. Add a new todo in the input above.
     </p>
+  </div>
+  <div class="row border p-3 ">
+    <div class="col-2 align-self-center">
+      <span>{{activeToDos.length}} left</span>
+    </div>
+    <div class="col-10">
+      <div class="btn-group justify-content-center d-flex">
+        <input type="radio" class="btn-check" id="btnradio1" autocomplete="off"
+               v-bind:checked="visibility=='all'"
+               v-on:change="visibility='all'">
+        <label class="btn btn-outline-primary" for="btnradio1">All</label>
+
+        <input type="radio" class="btn-check" id="btnradio2" autocomplete="off"
+               v-bind:checked="visibility=='completed'"
+               v-on:change="visibility='completed'">
+        <label class="btn btn-outline-primary" for="btnradio2">Completed</label>
+
+        <input type="radio" class="btn-check" id="btnradio3" autocomplete="off"
+               v-bind:checked="visibility=='active'"
+               v-on:change="visibility='active'">
+        <label class="btn btn-outline-primary" for="btnradio3">Active</label>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -37,7 +63,8 @@ export default {
   data () {
     return {
       newTodoText: '',
-      todos: []
+      todos: [],
+      visibility : "all"
     }
   },
   created() {
@@ -50,16 +77,36 @@ export default {
       console.error(error);
     });
   },
+  computed: {
+    visibleToDos() {
+      if (this.visibility == "active") {
+        return this.todos.filter(todo => {
+          return !todo.completed
+        })
+      } else if (this.visibility == "completed") {
+        return this.todos.filter(todo => {
+          return todo.completed
+        })
+      } else {
+        return this.todos
+      }
+    },
+    activeToDos() {
+        return this.todos.filter(todo => {
+          return !todo.completed
+        })
+    }
+  },
   methods: {
     addTodo () {
       const trimmedText = this.newTodoText.trim()
       if (trimmedText) {
         axios_instance.post(
-           "",
-           {
-            title: trimmedText,
-            completed: false
-          }
+            "",
+            {
+              title: trimmedText,
+              completed: false
+            }
         ).then(result => {
           this.todos.push(result.data)
           this.newTodoText = ''
@@ -84,9 +131,9 @@ export default {
       axios_instance.put(
           todoToUpdate.id ,
           {
-          title: todoToUpdate.title,
-          completed: !todoToUpdate.completed
-        }
+            title: todoToUpdate.title,
+            completed: !todoToUpdate.completed
+          }
       ).then(result => {
         todoToUpdate.completed = result.data.completed
       }, error => {
