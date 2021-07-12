@@ -1,5 +1,4 @@
 <template>
-
   <li class="input-group mb-3">
     <div class="input-group-text">
       <input class="form-check-input mt-0" type="checkbox" v-bind:checked="todo.completed" v-on:change="$emit('update', todo)"/>

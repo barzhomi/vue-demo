@@ -8,21 +8,19 @@
     />
   </div>
   <div class="row p-3">
-    <ul v-if="todos.length">
+    <transition-group name="list-complete" tag="ul" >
       <TodoListItem
           v-for="todo in visibleToDos"
           v-bind:key="todo.id"
           v-bind:todo="todo"
           v-on:remove="removeTodo"
           v-on:update="updateTodo"
+          class="list-complete-item"
       />
-    </ul>
-    <p v-else>
-      Nothing left in the list. Add a new todo in the input above.
-    </p>
+    </transition-group>
   </div>
-  <div class="row border p-3 ">
-    <div class="col-2 align-self-center">
+  <div class="row border p-3">
+    <div class="col-1 align-self-center">
       <span>{{activeToDos.length}} left</span>
     </div>
     <div class="col-10">
@@ -43,23 +41,27 @@
         <label class="btn btn-outline-primary" for="btnradio3">Active</label>
       </div>
     </div>
+    <div class="col-1 d-flex justify-content-end">
+      <button class="btn btn-outline-secondary" v-on:click="updateTodoList">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-clockwise" viewBox="0 0 16 16">
+          <path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"/>
+          <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"/>
+        </svg>
+      </button>
+    </div>
+
   </div>
 </template>
 
 <script>
 import TodoListItem from './TodoListItem.vue'
-import axios from "axios"
+import {axios_instance} from "../services/ApiService"
 
-const axios_instance = axios.create({
-  baseURL: 'http://45.9.24.240:8080/products/',
-  // baseURL: 'http://localhost:8080/products/',
-});
 
 export default {
   components: {
     TodoListItem
   },
-
   data () {
     return {
       newTodoText: '',
@@ -67,9 +69,9 @@ export default {
       visibility : "all"
     }
   },
-  created() {
+  created(){
     axios_instance.get().then(result => {
-      console.log(result.data)
+      this.todos = [];
       result.data.forEach(element => {
         this.todos.push(element)
       })
@@ -92,12 +94,23 @@ export default {
       }
     },
     activeToDos() {
-        return this.todos.filter(todo => {
-          return !todo.completed
-        })
+      return this.todos.filter(todo => {
+        return !todo.completed
+      })
     }
   },
   methods: {
+    updateTodoList (){
+      axios_instance.get().then(result => {
+        console.log(result.data)
+        this.todos = []
+        result.data.forEach(element => {
+          this.todos.push(element)
+        })
+      }, error => {
+        console.error(error);
+      });
+    },
     addTodo () {
       const trimmedText = this.newTodoText.trim()
       if (trimmedText) {
@@ -143,3 +156,20 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+
+.list-complete-item {
+  transition: all 0.8s ease;
+}
+
+.list-complete-enter-from,
+.list-complete-leave-to {
+  opacity: 0;
+  transform: translateY(30px);
+}
+
+.list-complete-leave-active {
+
+}
+</style>

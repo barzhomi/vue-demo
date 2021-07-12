@@ -1,10 +1,19 @@
-FROM node:12.22.2
+# build stage
+FROM node:lts-alpine as build-stage
+ARG NODE_ENV
+ARG API_BASE_URL
+ENV NODE_ENV "$NODE_ENV"
+ENV API_BASE_URL "$API_BASE_URL"
 
 WORKDIR /app
 COPY ["package.json", "package-lock.json*", "./"]
 RUN npm install
-COPY ./ .
+COPY . .
 RUN npm run build
 
-
-CMD [ "npm", "run", "production-serve" ]
+# production stage
+FROM nginx:stable-alpine as production-stage
+COPY --from=build-stage /app/dist /usr/share/nginx/html
+COPY --from=build-stage /app/replace_api_url.sh /
+EXPOSE 80
+CMD ["sh", "replace_api_url.sh"]

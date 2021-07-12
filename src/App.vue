@@ -1,9 +1,7 @@
 <template>
-  <div id="app" class="container p-3">
-    <div class="col">
-      <h1 class="row justify-content-center">todos</h1>
-      <TodoList class="row"/>
-    </div>
+  <div class="d-flex flex-column mh-100">
+    <h1 class="row justify-content-center">todos</h1>
+    <TodoList/>
   </div>
 </template>
 
@@ -16,8 +14,3 @@ export default {
   }
 }
 </script>
-
-<style>
-
-
-</style>
